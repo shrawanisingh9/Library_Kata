@@ -21,7 +21,9 @@ import java.util.List;
 
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 @WebMvcTest(LibraryController.class)
 @Import(GlobalExceptionHandler.class)
@@ -111,5 +113,91 @@ class LibraryControllerTest {
 
         mockMvc.perform(get("/api/library/users/U1/books"))
                 .andExpect(status().isNotFound());
+    }
+
+    //User Validation Tests
+    @Test
+    void shouldReturnBadRequestWhenUserIdIsBlank() throws Exception {
+        User user = new User("", "John");
+
+        mockMvc.perform(post("/api/library/users")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(user)))
+                .andExpect(status().isBadRequest());
+        Mockito.verifyNoInteractions(libraryService);
+    }
+
+    //Book Validation Tests
+    @Test
+    void shouldReturnBadRequestWhenBookIdIsBlank() throws Exception {
+        Book book = new Book("", "Clean Code", "Martin", 2);
+
+        mockMvc.perform(post("/api/library/books")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(book)))
+                .andExpect(status().isBadRequest());
+    }
+
+    @Test
+    void shouldReturnBadRequestWhenTitleIsBlank() throws Exception {
+        Book book = new Book("B1", "", "Robert Martin", 2);
+
+        mockMvc.perform(post("/api/library/books")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(book)))
+                .andExpect(status().isBadRequest());
+    }
+
+    @Test
+    void shouldReturnBadRequestWhenTotalCopiesIsZero() throws Exception {
+        Book book = new Book("B1", "Clean Code", "Martin", 0);
+
+        mockMvc.perform(post("/api/library/books")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(book)))
+                .andExpect(status().isBadRequest());
+    }
+
+    @Test
+    void shouldReturnBadRequestWhenTotalCopiesIsNegative() throws Exception {
+        Book book = new Book("B1", "Clean Code", "Robert Martin", -1);
+
+        mockMvc.perform(post("/api/library/books")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(book)))
+                .andExpect(status().isBadRequest());
+    }
+
+    //RequestParam Validation Tests
+    @Test
+    void shouldReturnBadRequestWhenBorrowUserIdIsBlank() throws Exception {
+        mockMvc.perform(post("/api/library/borrow")
+                        .param("userId", "")
+                        .param("bookId", "B1"))
+                .andExpect(status().isBadRequest());
+    }
+
+    @Test
+    void shouldReturnBadRequestWhenBorrowBookIdIsBlank() throws Exception {
+        mockMvc.perform(post("/api/library/borrow")
+                        .param("userId", "U1")
+                        .param("bookId", ""))
+                .andExpect(status().isBadRequest());
+    }
+
+    @Test
+    void shouldReturnBadRequestWhenReturnUserIdIsBlank() throws Exception {
+        mockMvc.perform(post("/api/library/return")
+                        .param("userId", "")
+                        .param("bookId", "B1"))
+                .andExpect(status().isBadRequest());
+    }
+
+    @Test
+    void shouldReturnBadRequestWhenReturnBookIdIsBlank() throws Exception {
+        mockMvc.perform(post("/api/library/return")
+                        .param("userId", "U1")
+                        .param("bookId", ""))
+                .andExpect(status().isBadRequest());
     }
 }

@@ -35,16 +35,6 @@ public class LibraryServiceImpl implements LibraryService {
             throw new IllegalArgumentException("Book cannot be null");
         }
 
-        validateId(book.getBookId(), "Book Id");
-
-        if (book.getTitle() == null || book.getTitle().isBlank()) {
-            throw new IllegalArgumentException("Book title cannot be empty");
-        }
-
-        if (book.getTotalCopies() <= 0) {
-            throw new IllegalArgumentException("Total copies must be greater than zero");
-        }
-
         if (books.containsKey(book.getBookId())) {
             throw new DuplicateBookException(book.getBookId());
         }
@@ -54,11 +44,7 @@ public class LibraryServiceImpl implements LibraryService {
 
     @Override
     public void borrowBook(String userId, String bookId) {
-
-        validateId(userId, "User Id");
-        validateId(bookId, "Book Id");
         validateUser(userId);
-
         Book book = getBook(bookId);
 
         synchronized (book) {
@@ -89,11 +75,7 @@ public class LibraryServiceImpl implements LibraryService {
 
     @Override
     public void returnBook(String userId, String bookId) {
-
-        validateId(userId, "User Id");
-        validateId(bookId, "Book Id");
         validateUser(userId);
-
         Book book = getBook(bookId);
 
         synchronized (book) {
@@ -112,10 +94,7 @@ public class LibraryServiceImpl implements LibraryService {
 
     @Override
     public List<Book> getBorrowedBooks(String userId) {
-
-        validateId(userId, "User Id");
         validateUser(userId);
-
         Set<String> borrowedBooks = activeBooksByUser.getOrDefault(userId, Collections.emptySet());
 
         return borrowedBooks.stream()
@@ -130,12 +109,6 @@ public class LibraryServiceImpl implements LibraryService {
         return borrowRecords.stream()
                 .filter(record -> record.getUserId().equals(userId))
                 .toList();
-    }
-
-    private void validateId(String id, String fieldName) {
-        if (id == null || id.isBlank()) {
-            throw new IllegalArgumentException(fieldName + " cannot be null or empty");
-        }
     }
 
     private void validateUser(String userId) {

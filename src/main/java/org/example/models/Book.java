@@ -1,15 +1,24 @@
 package org.example.models;
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.Positive;
+import jakarta.validation.constraints.Size;
 import lombok.Getter;
 import lombok.Setter;
 
 @Getter
 @Setter
+@JsonIgnoreProperties(ignoreUnknown = true)
 public class Book {
 
+    @NotBlank(message = "BookId must not be blank")
     private final String bookId;
+    @NotBlank(message = "Title cannot be blank")
+    @Size(max = 200)
     private final String title;
     private final String author;
+    @Positive(message = "Total copies must be greater than zero")
     private final int totalCopies;
     private int availableCopies;
 
